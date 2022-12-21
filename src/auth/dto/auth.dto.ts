@@ -9,8 +9,8 @@ export class AuthDto {
   @IsNotEmpty()
   password: string;
 
-  id: number;
-  isAdmin: boolean;
+  id?: number;
+  isAdmin?: boolean;
 }
 
 export class updatePrivilegesDto {

@@ -1,43 +1,59 @@
 import { Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/auth/dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { DataDto } from './dto';
-import { db } from './database';
 
 @Injectable({})
 export class DataService {
-  getData() {
-    return { users: db };
+  constructor(private db: PrismaService) {}
+
+  async getData() {
+    return { users: await this.db.user.findMany() };
   }
 
-  getUser(user: DataDto) {
-    return db.filter((current: DataDto) => current.username == user.username);
+  async getUser(user: AuthDto) {
+    console.log(user);
+    return await this.db.user.findFirst({
+      where: { username: user.username },
+    });
   }
 
-  getDataById(id: number) {
-    return db.filter((user: DataDto) => user.id == id)[0];
-  }
-  addData(obj: AuthDto) {
-    obj.id = db.length > 0 ? db[db.length - 1].id + 1 : 1;
-    obj.isAdmin = false;
-    db.push(obj);
-    return true;
+  async getDataById(id: number) {
+    return await this.db.user.findUnique({
+      where: { id },
+    });
   }
 
-  removeData(id: number) {
-    const index: number = db.findIndex((obj: DataDto) => obj.id == id);
-    const userInfo: DataDto = db[index];
-    db.splice(index, 1);
+  async addData(obj: AuthDto) {
+    const user = await this.db.user.create({
+      data: {
+        username: obj.username,
+        password: obj.password,
+        isAdmin: false,
+      },
+    });
+    return Boolean(user.id);
+  }
+
+  async removeData(id: number) {
+    const userInfo = this.db.user.findUnique({
+      where: {
+        id,
+      },
+    });
+    const result = await this.db.user.delete({ where: { id } });
+    console.log(result);
     return userInfo;
   }
 
-  updateData(id: number, isAdmin: boolean) {
-    let isUpdated = false;
-    db.forEach((obj: DataDto, index: number) => {
-      if (obj.id == id) {
-        db[index].isAdmin = isAdmin;
-        isUpdated = true;
-      }
+  async updateData(id: number, isAdmin: boolean) {
+    const result = await this.db.user.update({
+      where: { id },
+      data: {
+        isAdmin,
+      },
     });
-    return isUpdated;
+    console.log(result);
+    return true;
   }
 }

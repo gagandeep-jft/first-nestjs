@@ -12,17 +12,20 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
   ) {}
-  signUp(dto: AuthDto) {
-    if (this.db.addData(dto)) {
+
+  async signUp(dto: AuthDto) {
+    console.log(dto);
+    if (await this.db.addData(dto)) {
       return { status: 200, message: 'user signed up!' };
     }
     return { status: 500, message: 'internal server error' };
   }
-  signin(dto: AuthDto) {
-    const result: DataDto[] = this.db.getUser(dto);
-    if (result.length == 1) {
-      if (dto.password === result[0].password) {
-        return this.signToken(result[0].id, result[0].username);
+
+  async signin(dto: AuthDto) {
+    const result: DataDto = await this.db.getUser(dto);
+    if (result) {
+      if (dto.password === result.password) {
+        return this.signToken(result.id, result.username);
       }
     }
     throw new BadRequestException('Invalid Username or Password');
@@ -36,7 +39,7 @@ export class AuthService {
       sub: id,
       username,
     };
-    const secret = this.config.get('JWT_SECRET');
+    const secret = await this.config.get('JWT_SECRET');
     const access_token = {
       access_token: await this.jwt.signAsync(payload, {
         expiresIn: '15m',
