@@ -7,13 +7,16 @@ import {
   Param,
   ParseIntPipe,
   ParseBoolPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { DataService } from './data.service';
 
 @Controller('data')
 export class DataController {
   constructor(private db: DataService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   getData() {
     return this.db.getData();
@@ -24,6 +27,7 @@ export class DataController {
     return { user: this.db.getDataById(id) };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Put('/update/:id')
   updateInfo(
     @Param('id', new ParseIntPipe()) id: number,
@@ -32,6 +36,7 @@ export class DataController {
     return this.db.updateData(id, isAdmin);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete('/delete/:id')
   deleteUser(@Param('id', new ParseIntPipe()) id: number) {
     return this.db.removeData(id);
