@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from 'src/auth/guards/roles.guard';
 import { DataService } from './data.service';
 
 @Controller('data')
@@ -27,7 +28,7 @@ export class DataController {
     return { user: this.db.getDataById(id) };
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put('/update/:id')
   updateInfo(
     @Param('id', new ParseIntPipe()) id: number,
@@ -36,7 +37,7 @@ export class DataController {
     return this.db.updateData(id, isAdmin);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete('/delete/:id')
   deleteUser(@Param('id', new ParseIntPipe()) id: number) {
     return this.db.removeData(id);

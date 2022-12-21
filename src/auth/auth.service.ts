@@ -22,11 +22,7 @@ export class AuthService {
     const result: DataDto[] = this.db.getUser(dto);
     if (result.length == 1) {
       if (dto.password === result[0].password) {
-        return this.signToken(
-          result[0].id,
-          result[0].username,
-          result[0].isAdmin,
-        );
+        return this.signToken(result[0].id, result[0].username);
       }
     }
     throw new BadRequestException('Invalid Username or Password');
@@ -35,12 +31,10 @@ export class AuthService {
   async signToken(
     id: number,
     username: string,
-    isAdmin: boolean,
   ): Promise<{ access_token: string }> {
     const payload = {
       sub: id,
       username,
-      isAdmin,
     };
     const secret = this.config.get('JWT_SECRET');
     const access_token = {
